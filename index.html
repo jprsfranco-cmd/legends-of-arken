@@ -3,9 +3,91 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#141420">
 <title>Legends of Arken</title>
-<h1 style="text-align:center;margin-top:40px;">🎮 Bem-vindo a Legends of Arken!</h1>
-<p style="text-align:center;">Seu site foi configurado com sucesso no GitHub Pages.</p>
-<p style="text-align:center;">Em breve o jogo completo será carregado aqui.</p>
+<style>
+  html,body {height:100%;margin:0;background:#000;color:#fff;font-family:Arial, sans-serif;}
+  #wrap{position:relative;max-width:960px;margin:16px auto;}
+  canvas{display:block;width:100%;background:#111;border:4px solid #222;border-radius:8px;image-rendering:pixelated;}
+  #ui{position:absolute;left:10px;top:10px;background:rgba(0,0,0,.6);padding:8px;border-radius:6px;font-size:14px}
+  #inv{position:absolute;right:10px;top:10px;background:rgba(0,0,0,.6);padding:8px;border-radius:6px;width:180px;font-size:13px}
+  #dialog{position:absolute;left:50%;transform:translateX(-50%);bottom:10px;background:rgba(0,0,0,.8);padding:10px 14px;border-radius:8px;display:none}
+</style>
+</head>
+<body>
+  <div id="wrap">
+    <canvas id="game" width="640" height="384"></canvas>
+    <div id="ui">HP: <span id="hp">0</span> | MANA: <span id="mana">0</span><br>EXP: <span id="exp">0</span> | LVL: <span id="lvl">0</span></div>
+    <div id="inv"><b>Inventário</b><ul id="invList" style="padding-left:18px;margin:6px 0;"></ul></div>
+    <div id="dialog"></div>
+  </div>
+
+  <script>
+    if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js'); }
+
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const TS = 32;
+
+    const player = { x:TS*2, y:TS*2, hp:50, maxHp:50, mana:30, maxMana:30, lvl:1, exp:0, expNext:40, speed:2, attack:6, weapon:{name:'Punhal Inicial',power:2}, inventory:[], gold:50 };
+
+    const map = [
+     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+     [1,0,0,0,0,3,0,0,0,0,0,0,2,2,0,0,0,5,0,1],
+     [1,0,0,0,0,3,0,0,0,0,0,0,2,2,0,0,0,0,0,1],
+     [1,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,1],
+     [1,0,2,2,2,0,0,0,0,4,4,0,0,0,0,0,0,2,2,1],
+     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    ];
+
+    let enemies = [{x:TS*8,y:TS*1,hp:25,atk:4,alive:true,exp:10},{x:TS*8,y:TS*2,hp:25,atk:4,alive:true,exp:10}];
+    let boss = {x:TS*17,y:TS*1,hp:150,atk:12,alive:true,exp:100};
+    const npcQuest = {x:TS*2,y:TS*4,dialog:['Olá aventureiro!','Derrote 2 monstros e volte!'],questActive:false,questDone:false};
+    const npcShop = {x:TS*7,y:TS*3};
+    const shopItems = [{name:'Poção de Cura',type:'heal',value:20,price:15},{name:'Poção de Mana',type:'mana',value:15,price:15},{name:'Espada Longa',type:'weapon',power:5,price:40}];
+
+    const keys = {};
+    document.addEventListener('keydown', e=> { keys[e.key]=true; if(e.key===' ') attack(); if(e.key==='e') interact(); });
+    document.addEventListener('keyup', e=> keys[e.key]=false);
+
+    function movePlayer(){
+      let nx=player.x, ny=player.y;
+      if(keys['ArrowUp']) ny-=player.speed;
+      if(keys['ArrowDown']) ny+=player.speed;
+      if(keys['ArrowLeft']) nx-=player.speed;
+      if(keys['ArrowRight']) nx+=player.speed;
+      if(!collides(nx,ny)){ player.x=nx; player.y=ny; }
+    }
+
+    function collides(nx,ny){
+      const tx=Math.floor(nx/TS), ty=Math.floor(ny/TS);
+      if(ty<0||ty>=map.length||tx<0||tx>=map[0].length) return true;
+      return map[ty][tx]===1 || map[ty][tx]===2;
+    }
+
+    function attack(){
+      [...enemies, boss].forEach(e=>{
+        if(!e.alive) return;
+        let d = Math.hypot(player.x - e.x, player.y - e.y);
+        if(d < 50){
+          const dmg = player.attack + (player.weapon?.power || 0);
+          e.hp -= dmg;
+          if(e.hp <= 0){ e.alive=false; gainExp(e.exp); dropLoot(); }
+        }
+      });
+    }
+
+    function gainExp(v){ player.exp += v; if(player.exp >= player.expNext){ player.lvl++; player.exp = 0; player.expNext = Math.floor(player.expNext * 1.5); player.maxHp += 5; player.attack += 1; showDialog('🔥 LEVEL UP!'); } updateUI(); }
+    function dropLoot(){ let item={name:'Espada Rúnica',power:3}; player.inventory.push(item); if(!player.weapon) player.weapon=item; updateInventory(); }
+    function showDialog(t){ const box=document.getElementById('dialog'); box.style.display='block'; box.textContent=t; setTimeout(()=>box.style.display='none',3500); }
+    function updateUI(){ document.getElementById('hp').textContent=Math.floor(player.hp); document.getElementById('mana').textContent=Math.floor(player.mana); document.getElementById('exp').textContent=player.exp; document.getElementById('lvl').textContent=player.lvl; }
+    function updateInventory(){ const list=document.getElementById('invList'); list.innerHTML=''; player.inventory.forEach(i=>{ let li=document.createElement('li'); li.textContent=i.name+(i.power? ' (+'+i.power+')':'' ); list.appendChild(li); }); }
+    function drawMap(){ for(let y=0;y<map.length;y++){ for(let x=0;x<map[0].length;x++){ let t=map[y][x]; if(t===1) ctx.fillStyle='#444'; else if(t===2) ctx.fillStyle='#0033aa'; else ctx.fillStyle='#111'; ctx.fillRect(x*TS,y*TS,TS,TS); } } }
+    function drawEntities(){ ctx.fillStyle='cyan'; ctx.fillRect(player.x,player.y,TS,TS); enemies.forEach(e=>{ if(e.alive){ ctx.fillStyle='red'; ctx.fillRect(e.x,e.y,TS,TS); } }); if(boss.alive){ ctx.fillStyle='purple'; ctx.fillRect(boss.x,boss.y,TS,TS); } ctx.fillStyle='yellow'; ctx.fillRect(npcQuest.x,npcQuest.y,TS,TS); ctx.fillStyle='orange'; ctx.fillRect(npcShop.x,npcShop.y,TS,TS); }
+    function loop(){ ctx.clearRect(0,0,canvas.width,canvas.height); movePlayer(); drawMap(); drawEntities(); updateUI(); requestAnimationFrame(loop); }
+    updateInventory(); loop();
+  </script>
 </body>
 </html>
