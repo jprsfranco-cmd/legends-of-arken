@@ -1,0 +1,16 @@
+{
+  "name": "Legends of Arken",
+  "short_name": "Arken",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#141420",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/jprsfranco-cmd/legends-of-arken/main/index_files/1762810052723.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
