@@ -1,49 +1,54 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Legends of Arken: Rise of the Three</title>
 <style>
-  html,body{
-    margin:0;padding:0;height:100%;overflow:hidden;
-    font-family:"Cinzel",serif;background:#000;
-    color:#d4af37; /* dourado antigo */
+  html, body {
+    margin: 0; padding: 0; height: 100%; overflow: hidden;
+    font-family: "Cinzel", serif; background: #000; color: #d4af37;
   }
+
+  /* ===== Animações ===== */
   @keyframes glowTitle {
-    0%{text-shadow:0 0 5px #d4af37,0 0 10px #d4af37;}
-    50%{text-shadow:0 0 20px #ffd700,0 0 40px #ffef8a;}
-    100%{text-shadow:0 0 5px #d4af37,0 0 10px #d4af37;}
+    0% { text-shadow: 0 0 5px #d4af37, 0 0 10px #d4af37; }
+    50% { text-shadow: 0 0 20px #ffd700, 0 0 40px #ffef8a; }
+    100% { text-shadow: 0 0 5px #d4af37, 0 0 10px #d4af37; }
   }
   @keyframes floatParticles {
-    0%{transform:translateY(0) scale(1);opacity:0.7;}
-    100%{transform:translateY(-100vh) scale(0.5);opacity:0;}
+    0% { transform: translateY(0) scale(1); opacity: 0.7; }
+    100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
   }
+
+  /* ===== Menu Principal ===== */
   #menu {
-    position:absolute;inset:0;display:flex;
-    flex-direction:column;justify-content:center;align-items:center;
-    background:radial-gradient(circle at center,#1a1a1a 0%,#000 80%);
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    background: radial-gradient(circle at center, #1a1a1a 0%, #000 80%);
   }
   h1 {
-    font-size:3em;text-align:center;margin-bottom:40px;
-    color:#d4af37;animation:glowTitle 3s infinite alternate;
+    font-size: 3em; text-align: center; margin-bottom: 40px;
+    color: #d4af37; animation: glowTitle 3s infinite alternate;
   }
   .btn {
-    font-size:1.4em;margin:10px;padding:10px 40px;
-    border:2px solid #d4af37;background:transparent;color:#d4af37;
-    cursor:pointer;transition:0.3s;min-width:200px;
+    font-size: 1.4em; margin: 10px; padding: 10px 40px;
+    border: 2px solid #d4af37; background: transparent; color: #d4af37;
+    cursor: pointer; transition: 0.3s; min-width: 200px;
   }
   .btn:hover {
-    background:#d4af37;color:#000;box-shadow:0 0 15px #ffd700;
+    background: #d4af37; color: #000; box-shadow: 0 0 15px #ffd700;
   }
-  .particle{
-    position:absolute;width:4px;height:4px;
-    background:#d4af37;border-radius:50%;
-    animation:floatParticles linear infinite;
+  .particle {
+    position: absolute; width: 4px; height: 4px;
+    background: #d4af37; border-radius: 50%;
+    animation: floatParticles linear infinite;
   }
 </style>
 </head>
 <body>
+<!-- ===== Menu Principal ===== -->
 <div id="menu">
   <h1>Legends of Arken:<br>Rise of the Three</h1>
   <button class="btn" id="startBtn">Iniciar Jogo</button>
@@ -52,34 +57,129 @@
 </div>
 
 <script>
-/* ---------- partículas douradas animadas ---------- */
-for(let i=0;i<80;i++){
-  const p=document.createElement("div");
-  p.className="particle";
-  p.style.left=Math.random()*100+"%";
-  p.style.bottom="0";
-  p.style.animationDuration=5+Math.random()*10+"s";
-  p.style.animationDelay=Math.random()*5+"s";
+/* ===== Partículas Douradas ===== */
+for (let i = 0; i < 80; i++) {
+  const p = document.createElement("div");
+  p.className = "particle";
+  p.style.left = Math.random() * 100 + "%";
+  p.style.bottom = "0";
+  p.style.animationDuration = 5 + Math.random() * 10 + "s";
+  p.style.animationDelay = Math.random() * 5 + "s";
   document.body.appendChild(p);
 }
 
-/* ---------- botões do menu ---------- */
-document.getElementById("startBtn").addEventListener("click",()=>{
-  fadeOutMenu(()=>alert("Ir para seleção de classe (Parte 2)"));
+/* ===== Botões do Menu ===== */
+document.getElementById("startBtn").addEventListener("click", () => {
+  fadeOutMenu(showClassSelection);
 });
-document.getElementById("optionsBtn").addEventListener("click",()=>{
+document.getElementById("optionsBtn").addEventListener("click", () => {
   alert("Configurações ainda serão adicionadas (volume, sensibilidade etc.)");
 });
-document.getElementById("exitBtn").addEventListener("click",()=>{
-  window.close(); // funciona apenas em executáveis; no navegador não fecha
+document.getElementById("exitBtn").addEventListener("click", () => {
+  window.close(); // funciona em app, não em navegador
 });
 
-/* ---------- efeito de fade-out ---------- */
-function fadeOutMenu(callback){
-  const menu=document.getElementById("menu");
-  menu.style.transition="opacity 1s";
-  menu.style.opacity="0";
-  setTimeout(()=>{menu.remove();callback();},1000);
+/* ===== Efeito Fade ===== */
+function fadeOutMenu(callback) {
+  const menu = document.getElementById("menu");
+  menu.style.transition = "opacity 1s";
+  menu.style.opacity = "0";
+  setTimeout(() => {
+    menu.remove();
+    callback();
+  }, 1000);
+}
+
+/* ===== Seleção de Classe ===== */
+function showClassSelection() {
+  const container = document.createElement("div");
+  container.id = "classSelect";
+  container.style.position = "absolute";
+  container.style.inset = "0";
+  container.style.display = "flex";
+  container.style.flexDirection = "column";
+  container.style.alignItems = "center";
+  container.style.justifyContent = "center";
+  container.style.background =
+    "radial-gradient(circle at center,#111 0%,#000 80%)";
+  container.style.color = "#d4af37";
+  container.style.textAlign = "center";
+
+  const title = document.createElement("h2");
+  title.textContent = "Escolha sua Classe";
+  title.style.marginBottom = "30px";
+  title.style.textShadow = "0 0 10px #d4af37";
+  container.appendChild(title);
+
+  const classes = [
+    {
+      name: "Mago",
+      desc: "Domina o fogo e o relâmpago. Ataques à distância poderosos.",
+      color: "#66ccff",
+    },
+    {
+      name: "Arqueiro",
+      desc: "Ágil e preciso. Usa o arco para eliminar inimigos à distância.",
+      color: "#7fff00",
+    },
+    {
+      name: "Cavaleiro",
+      desc: "Guerreiro da luz. Corpo a corpo resistente e mortal.",
+      color: "#ff4c4c",
+    },
+  ];
+
+  const classRow = document.createElement("div");
+  classRow.style.display = "flex";
+  classRow.style.gap = "40px";
+  classRow.style.flexWrap = "wrap";
+  classRow.style.justifyContent = "center";
+
+  classes.forEach((cls) => {
+    const card = document.createElement("div");
+    card.style.border = `2px solid ${cls.color}`;
+    card.style.padding = "20px";
+    card.style.width = "220px";
+    card.style.borderRadius = "10px";
+    card.style.cursor = "pointer";
+    card.style.transition = "0.3s";
+    card.innerHTML = `<h3 style="color:${cls.color};">${cls.name}</h3>
+      <p style="font-size:0.9em;">${cls.desc}</p>`;
+    card.addEventListener("mouseenter", () => {
+      card.style.transform = "scale(1.05)";
+      card.style.boxShadow = `0 0 20px ${cls.color}`;
+    });
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = "scale(1)";
+      card.style.boxShadow = "none";
+    });
+    card.addEventListener("click", () => selectClass(cls.name));
+    classRow.appendChild(card);
+  });
+
+  container.appendChild(classRow);
+
+  const backBtn = document.createElement("button");
+  backBtn.textContent = "Voltar ao Menu";
+  backBtn.className = "btn";
+  backBtn.style.marginTop = "50px";
+  backBtn.addEventListener("click", () => {
+    container.remove();
+    location.reload(); // volta ao menu principal
+  });
+  container.appendChild(backBtn);
+
+  document.body.appendChild(container);
+}
+
+/* ===== Ao escolher classe ===== */
+<!-- ==== PARTE 3 - GAMEPLAY: MÓDULO 1 (MOVIMENTO) ==== -->
+<script>
+function startGame() {
+  ...
+  function selectClass(name) {
+  localStorage.setItem("playerClass", name);
+  startGame(); // inicia o gameplay diretamente
 }
 </script>
 </body>
