@@ -171,12 +171,8 @@ function showClassSelection() {
 
   document.body.appendChild(container);
 }
-
 /* ===== Ao escolher classe ===== */
-<!-- ==== PARTE 3 - GAMEPLAY: MÓDULO 1 (MOVIMENTO) ==== -->
-<script>
 function startGame() {
-  function startGame() {
   // remove tela de seleção de classe
   document.getElementById("classSelect").remove();
 
@@ -235,7 +231,8 @@ function startGame() {
   gameLoop();
 }
 
-  function selectClass(name) {
+/* ===== Escolher classe e iniciar o jogo ===== */
+function selectClass(name) {
   localStorage.setItem("playerClass", name);
   startGame(); // inicia o gameplay diretamente
 }
