@@ -176,7 +176,65 @@ function showClassSelection() {
 <!-- ==== PARTE 3 - GAMEPLAY: MÓDULO 1 (MOVIMENTO) ==== -->
 <script>
 function startGame() {
-  ...
+  function startGame() {
+  // remove tela de seleção de classe
+  document.getElementById("classSelect").remove();
+
+  // cria o canvas
+  const canvas = document.createElement("canvas");
+  canvas.id = "gameCanvas";
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  document.body.appendChild(canvas);
+
+  const ctx = canvas.getContext("2d");
+
+  // jogador
+  const player = {
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+    speed: 4,
+    size: 25,
+    color: "#d4af37"
+  };
+
+  const keys = {};
+
+  // detecta teclas pressionadas
+  window.addEventListener("keydown", (e) => keys[e.key.toLowerCase()] = true);
+  window.addEventListener("keyup", (e) => keys[e.key.toLowerCase()] = false);
+
+  function movePlayer() {
+    if (keys["w"]) player.y -= player.speed;
+    if (keys["s"]) player.y += player.speed;
+    if (keys["a"]) player.x -= player.speed;
+    if (keys["d"]) player.x += player.speed;
+
+    // impedir sair da tela
+    if (player.x < player.size) player.x = player.size;
+    if (player.y < player.size) player.y = player.size;
+    if (player.x > canvas.width - player.size) player.x = canvas.width - player.size;
+    if (player.y > canvas.height - player.size) player.y = canvas.height - player.size;
+  }
+
+  // loop principal
+  function gameLoop() {
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // desenha o jogador
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
+    ctx.fillStyle = player.color;
+    ctx.fill();
+
+    movePlayer();
+    requestAnimationFrame(gameLoop);
+  }
+
+  gameLoop();
+}
+
   function selectClass(name) {
   localStorage.setItem("playerClass", name);
   startGame(); // inicia o gameplay diretamente
